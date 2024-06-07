@@ -21,7 +21,7 @@ Support Mode ( AES )
   * CFB
   * CFB8
   * OFB
-  * GCM ( Working )
+  * GCM ( Idk )
   * XTS
 # CODE
 
