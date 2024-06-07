@@ -18,11 +18,11 @@ Support Mode ( AES )
   * ECB 1 ( Working )
   * CBC 2
   * CTR 3 ( Working )
-  * CFB
-  * CFB8
-  * OFB
-  * GCM ( Idk )
-  * XTS
+  * CFB 4
+  * CFB8 5
+  * OFB 6
+  * GCM 7 ( Idk )
+  * XTS 8
 # CODE
 
 PYCRYPTODOME VERSION
