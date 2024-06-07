@@ -34,11 +34,11 @@ class AES_CRYPTO():
       else:iv = iv.encode()
       self.value = [key,iv,mode_check[0],mode_pad]
     else:
-      raise SyntaxError(f"{mode_aes} not match in {mode_check[2]}")
+      raise SyntaxError(f"{mode_aes} not match in {mode_check}")
     
-  def get_list(self):
+  def export(self):
     """
-    For get key,iv,mode in list version
+    For export key,iv,mode in list version
     """
     return self.value
   
@@ -99,9 +99,9 @@ class AES_CRYPTOGRAPHY():
     else:
       raise SyntaxError(f"{mode_aes} not match in {mode_check[2]}")
     
-  def get_list(self):
+  def export(self):
     """
-    For get key,iv,mode in list version
+    For export key,iv,mode in list version
     """
     return self.value
   
