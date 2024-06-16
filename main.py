@@ -121,7 +121,7 @@ class AES_CRYPTOGRAPHY():
     d = encryptor.update(PAD.pad_data(plaintext,algorithms.AES.block_size // 8)) + encryptor.finalize()
     if self.value[3] == '7': 
       self.value.append(encryptor.tag)
-    return d,self.tag
+    return d
   
   def decrypt(self,ciphertext,mode=None):
     """ciphertext for Decrypt Message
