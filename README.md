@@ -12,7 +12,7 @@ Support Mode ( AES )
   * CCM 8
   * EAX 9 ( Idk )
   * SIV 10
-  * GCM 11
+  * GCM 11 ( Idk )
   * OCB 12
 * CRYPTOGRAPHY
   * ECB 1 ( Working )
@@ -21,7 +21,7 @@ Support Mode ( AES )
   * CFB 4
   * CFB8 5
   * OFB 6
-  * GCM 7 ( Idk )
+  * GCM 7 ( Working )
   * XTS 8
 # CODE
 
