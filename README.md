@@ -10,7 +10,7 @@ Support Mode ( AES )
   * CTR 6 ( UNKNOWN )
   * OPENPGP 7
   * CCM 8
-  * EAX 9 ( UNKNOWN )
+  * EAX 9
   * SIV 10
   * GCM 11 ( UNKNOWN )
   * OCB 12
