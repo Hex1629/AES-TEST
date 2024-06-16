@@ -76,26 +76,31 @@ class AES_CRYPTO():
     except Exception as e:return e
 
 class AES_CRYPTOGRAPHY():
-  def __init__(self, key=None,iv=None,mode_aes=None,mode_key_hash="SHA256"):
+  def __init__(self, key=None,iv=None,mode_aes=None,mode_key_hash="SHA256",auth_message=b"TH3ReAR3@uTHM_G!"):
+    if not isinstance(auth_message, bytes):
+      auth_message = auth_message.encode()
     """
     key for Key Must be string which will used to encrypt the strings or files
     iv for initializing vector which is used to randomize the encrypted data
     mode_aes for encrypting data
-    mode_key_hash for hashing key SHA256,BLAKE2S,SHA3_256"""
+    mode_key_hash for hashing key SHA256,BLAKE2S,SHA3_256
+    auth_message for GCM ENCRYPTION """
     if key == None:key = CREATE_STRING.generate_string(32)
     if iv == None:iv = CREATE_STRING.generate_string(16)
     if mode_aes == None:mode_aes = 2
     mode_check = AES_METHODS.check_cryptomode(mode_aes,type="CRYPTOGRAPHY")
     if mode_check != False:
       if AES_METHODS.check_iv(iv) == False:return f"{iv}={len(iv)} must be length 16"
+      if mode_key_hash == 'SHA256':key = hashlib.sha256(key.encode()).digest()
+      elif mode_key_hash == 'BLAKE2S':key = hashlib.blake2s(key.encode()).digest()
+      else:key = hashlib.sha3_256(key.encode()).digest()
       if mode_aes == 1:
         mode = mode_check[0]()
       else:
         mode = mode_check[0](iv.encode())
-      if mode_key_hash == 'SHA256':key = hashlib.sha256(key.encode()).digest()
-      elif mode_key_hash == 'BLAKE2S':key = hashlib.blake2s(key.encode()).digest()
-      else:key = hashlib.sha3_256(key.encode()).digest()
-      self.value = [key,iv,mode]
+      self.value = [key,iv,mode,str(mode_check[1])]
+      if str(mode_check[1]) == "7":
+        self.value.append(auth_message)
     else:
       raise SyntaxError(f"{mode_aes} not match in {mode_check[2]}")
     
@@ -111,7 +116,12 @@ class AES_CRYPTOGRAPHY():
       plaintext = plaintext.encode()
     self.bypass_data = plaintext
     encryptor = Cipher(algorithms.AES(self.value[0]), self.value[2], backend=default_backend()).encryptor()
-    return encryptor.update(PAD.pad_data(plaintext,algorithms.AES.block_size // 8)) + encryptor.finalize()
+    if self.value[3] == '7':
+      encryptor.authenticate_additional_data(self.value[4])
+    d = encryptor.update(PAD.pad_data(plaintext,algorithms.AES.block_size // 8)) + encryptor.finalize()
+    if self.value[3] == '7': 
+      self.value.append(encryptor.tag)
+    return d,self.tag
   
   def decrypt(self,ciphertext,mode=None):
     """ciphertext for Decrypt Message
@@ -119,9 +129,16 @@ class AES_CRYPTOGRAPHY():
     if mode != None:
       return self.bypass_data
     else:
+     modes = ''
      if not isinstance(ciphertext, bytes):
       ciphertext = ciphertext.encode()
-     decryptor = Cipher(algorithms.AES(self.value[0]), self.value[2], backend=default_backend()).decryptor()
+      print("yes")
+     if str(self.value[3]) == "7":
+       modes = AES_METHODS.check_cryptomode(7,type="CRYPTOGRAPHY")[0](self.value[1].encode(),self.value[5])
+     else:modes = self.value[2]
+     decryptor = Cipher(algorithms.AES(self.value[0]), modes, backend=default_backend()).decryptor()
+     if self.value[3] == '7':
+      decryptor.authenticate_additional_data(self.value[4])
      return PAD.unpad(decryptor.update(ciphertext) + decryptor.finalize())
   
 class AES_METHODS():
