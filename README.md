@@ -2,19 +2,19 @@
 I want more custom AES only ( DON'T CARE )
 #
 Support Mode ( AES )
-* PYCRYPTODOME
-  * ECB 1 ( Idk )
+* CRYPTOGRAPHY
+  * ECB 1 ( UNKNOWN )
   * CBC 2
   * CFB 3
   * OFB 5
-  * CTR 6 ( Idk )
+  * CTR 6 ( UNKNOWN )
   * OPENPGP 7
   * CCM 8
-  * EAX 9 ( Idk )
+  * EAX 9 ( UNKNOWN )
   * SIV 10
-  * GCM 11 ( Idk )
+  * GCM 11 ( UNKNOWN )
   * OCB 12
-* CRYPTOGRAPHY
+* PYCRYPTODOME
   * ECB 1 ( Working )
   * CBC 2
   * CTR 3 ( Working )
