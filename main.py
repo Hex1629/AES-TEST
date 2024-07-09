@@ -1,9 +1,9 @@
-from Crypto.Cipher import AES
+from Crypto.Cipher import AES,Salsa20
+from Crypto.Random import get_random_bytes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.backends import default_backend
-import random, string, time, os
-import hashlib
 from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.backends import default_backend
+import random, string, hashlib
 
 class CREATE_STRING():
   def generate_string(lengths):
@@ -197,3 +197,43 @@ class PAD():
     padding_length = data[-1]
     unpadded_data = data[:-padding_length]
     return unpadded_data
+
+class SALSA():
+ def __init__(self, key=None,nonce=None):
+    """
+    Key The key is the secret value used to initialize the cipher.
+    Nonce The nonce is a unique value used for each encryption to ensure the same plaintext doesn't result in the same ciphertext."""
+    if key == None:key = get_random_bytes(32)
+    if nonce == None:nonce = get_random_bytes(8)
+    self.value = [key,nonce]
+ 
+ def export(self):
+   """
+    For export key,nonce in list version
+   """
+   return self.value
+
+ def encryption(self,plaintext=''):
+  "plaintext for Encrypt Message"
+  if not isinstance(plaintext, bytes):
+    plaintext = plaintext.encode()
+  self.plaintext = plaintext
+  cipher = Salsa20.new(key=self.value[0], nonce=self.value[1])
+  ciphertext = cipher.encrypt(plaintext)
+  self.encode = ciphertext
+  return ciphertext
+  
+ def decryption(self,ciphertext='',mode=0):
+  """ciphertext for Decrypt Message
+    mode for Bypass decrypt message with original message"""
+  if mode == 0:
+   if len(ciphertext) == 0:
+    if not isinstance(ciphertext, bytes):
+     ciphertext = ciphertext.encode()
+   else:
+     ciphertext = self.encode
+   cipher = Salsa20.new(key=self.value[0], nonce=self.value[1])
+   plaintext = cipher.decrypt(ciphertext)
+  else:
+    plaintext = self.plaintext
+  return plaintext
