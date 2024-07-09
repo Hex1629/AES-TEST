@@ -1,17 +1,52 @@
-from Crypto.Cipher import AES,Salsa20
+from Crypto.Cipher import AES,PKCS1_OAEP,Salsa20
+from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
-import random, string, hashlib
+import random, string, hashlib,base64
 
 class CREATE_STRING():
+  
   def generate_string(lengths):
    try:
      return [''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=length)) for length in lengths]
    except:return ''.join(random.choices(string.ascii_letters + string.digits + string.punctuation, k=lengths))
 
-class AES_CRYPTO():
+class RSA_TEST():
+  def __init__(self, length=2048, public_key=None,private_key=None):
+    if public_key == None and private_key == None:
+     if length not in [1024,2048,3072,4096]:
+       length = 1024
+     key = RSA.generate(length)
+     private_key = key.export_key()
+     public_key = key.publickey().export_key()
+    elif public_key != None and private_key != None:pass
+    else:raise SyntaxError("Maybe not match key public and private")
+    self.public_key = public_key
+    self.private_key = private_key
+    
+  def export_public(self):
+    return self.public_key
+  
+  def export_private(self):
+    return self.private_key
+
+  def encrypt(self,data):
+    if not isinstance(data, bytes):
+      data = data.encode()
+    rsa_key = RSA.import_key(self.public_key)
+    cipher_rsa = PKCS1_OAEP.new(rsa_key)
+    encrypted_aes_key = cipher_rsa.encrypt(data)
+    return encrypted_aes_key
+
+  def decrypt(self,data):
+    rsa_key = RSA.import_key(self.private_key)
+    cipher_rsa = PKCS1_OAEP.new(rsa_key)
+    aes_key = cipher_rsa.decrypt(data)
+    return aes_key
+
+class AES_CRYPTOGRAPHY():
   def __init__(self, key=None,iv=None,mode_aes=None,mode_key_hash="SHA256".encode(),mode_iv_hash=False,mode_pad=2):
     """
     key for Key Must be string which will used to encrypt the strings or files
@@ -21,16 +56,19 @@ class AES_CRYPTO():
     mode_key_hash for hashing key with SHA256,BLAKE2S,SHA3_256 or default=False
     mode_pad for padded data for encryption ( 1,2 and 3 )"""
     if key == None:key = CREATE_STRING.generate_string(32)
-    if iv == None:iv = CREATE_STRING.generate_string(16)
+    if mode_aes != 12 and iv == None:
+      iv = CREATE_STRING.generate_string(16)
+    else:
+      iv = CREATE_STRING.generate_string(15)
     if mode_pad > 3:mode_pad = 2
     if mode_aes == None:mode_aes = 2
     mode_check = AES_METHODS.check_cryptomode(mode_aes)
     if mode_check != False:
-      if AES_METHODS.check_iv(iv) == False:return f"{iv}={len(iv)} must be length 16"
+      if AES_METHODS.check_iv(iv) == False and mode_aes != 12:raise SyntaxError(f"{iv}={len(iv)} must be length 16")
       if mode_key_hash == 'SHA256':key = hashlib.sha256(key.encode()).digest()
       elif mode_key_hash == 'BLAKE2S':key = hashlib.blake2s(key.encode()).digest()
       else:key = hashlib.sha3_256(key.encode()).digest()
-      if mode_iv_hash == 'MD5':iv = hashlib.md5(iv.encode()).digest()
+      if mode_aes != 12:iv = hashlib.md5(iv.encode()).digest()
       else:iv = iv.encode()
       self.value = [key,iv,mode_check[0],mode_pad]
     else:
@@ -56,7 +94,15 @@ class AES_CRYPTO():
        data = PAD.pad_data2(data)
       else:
         data = PAD.pad_data3(data.encode())
-      return AES.new(self.value[0], self.value[2], self.value[1]).encrypt(data)
+      if self.value[2] not in [10,11,12]:
+       if self.value[2] == 1:
+         return AES.new(self.value[0], self.value[2]).encrypt(data)
+       else:
+        return AES.new(self.value[0], self.value[2], self.value[1]).encrypt(data)
+      else:
+        cipher = AES.new(self.value[0], self.value[2], nonce=self.value[1])
+        ciphertext, self.tag = cipher.encrypt_and_digest(data)
+        return ciphertext
     except Exception as e:
       return e
 
@@ -69,13 +115,20 @@ class AES_CRYPTO():
      if mode != None:
        return self.bypass_data
      else:
-      data = AES.new(self.value[0],self. value[2], self.value[1]).decrypt(data).decode().rstrip()
-      if self.value[3] == 3:
-        data = PAD.unpad(data.encode())
-      return data
+      if self.value[2] in [10,11,12]:
+        cipher = AES.new(self.value[0], self.value[2], nonce=self.value[1])
+        return cipher.decrypt_and_verify(data, self.tag).decode().rstrip()
+      else:
+       if self.value[2] == 1:
+         data = AES.new(self.value[0],self. value[2]).decrypt(data).decode().rstrip()
+       else:
+         data = AES.new(self.value[0],self. value[2], self.value[1]).decrypt(data).decode().rstrip()
+       if self.value[3] == 3:
+         data = PAD.unpad(data.encode())
+       return data
     except Exception as e:return e
 
-class AES_CRYPTOGRAPHY():
+class AES_CRYPTO():
   def __init__(self, key=None,iv=None,mode_aes=None,mode_key_hash="SHA256",auth_message=b"TH3ReAR3@uTHM_G!"):
     if not isinstance(auth_message, bytes):
       auth_message = auth_message.encode()
@@ -132,7 +185,6 @@ class AES_CRYPTOGRAPHY():
      modes = ''
      if not isinstance(ciphertext, bytes):
       ciphertext = ciphertext.encode()
-      print("yes")
      if str(self.value[3]) == "7":
        modes = AES_METHODS.check_cryptomode(7,type="CRYPTOGRAPHY")[0](self.value[1].encode(),self.value[5])
      else:modes = self.value[2]
@@ -156,7 +208,7 @@ class AES_METHODS():
         return modes_aes[str(mode)],mode
       except:
         return False
-    MODE_NAMES = {1: "ECB",2: "CBC",3: "CFB",5: "OFB",6: "CTR",7: "OpenPGP",8: "CCM",9: "EAX",10: "SIV",11: "GCM",12: "OCB"}
+    MODE_NAMES = {1: "ECB",2: "CBC",3: "CFB",5: "OFB",6: "CTR",9: "EAX",10: "SIV",11: "GCM",12: "OCB"}
     if isinstance(mode, int):
       NAME_MODE = MODE_NAMES.get(mode)
       if NAME_MODE != None:
