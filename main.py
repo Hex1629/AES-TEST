@@ -46,7 +46,7 @@ class RSA_TEST():
     aes_key = cipher_rsa.decrypt(data)
     return aes_key
 
-class AES_CRYPTOGRAPHY():
+class AES_CRYPTO():
   def __init__(self, key=None,iv=None,mode_aes=None,mode_key_hash="SHA256".encode(),mode_iv_hash=False,mode_pad=2):
     """
     key for Key Must be string which will used to encrypt the strings or files
@@ -128,7 +128,7 @@ class AES_CRYPTOGRAPHY():
        return data
     except Exception as e:return e
 
-class AES_CRYPTO():
+class AES_CRYPTOGRAPHY():
   def __init__(self, key=None,iv=None,mode_aes=None,mode_key_hash="SHA256",auth_message=b"TH3ReAR3@uTHM_G!"):
     if not isinstance(auth_message, bytes):
       auth_message = auth_message.encode()
