@@ -67,6 +67,7 @@ class AES_CRYPTO():
       if AES_METHODS.check_iv(iv) == False and mode_aes != 12:raise SyntaxError(f"{iv}={len(iv)} must be length 16")
       if mode_key_hash == 'SHA256':key = hashlib.sha256(key.encode()).digest()
       elif mode_key_hash == 'BLAKE2S':key = hashlib.blake2s(key.encode()).digest()
+      elif mode_key_hash == 'None':key = key # FOR CURRENTLY NORMALY
       else:key = hashlib.sha3_256(key.encode()).digest()
       if mode_aes != 12:iv = hashlib.md5(iv.encode()).digest()
       else:iv = iv.encode()
@@ -146,6 +147,7 @@ class AES_CRYPTOGRAPHY():
       if AES_METHODS.check_iv(iv) == False:return f"{iv}={len(iv)} must be length 16"
       if mode_key_hash == 'SHA256':key = hashlib.sha256(key.encode()).digest()
       elif mode_key_hash == 'BLAKE2S':key = hashlib.blake2s(key.encode()).digest()
+      elif mode_key_hash == 'None':key = key # FOR CURRENTLY NORMALY
       else:key = hashlib.sha3_256(key.encode()).digest()
       if mode_aes == 1:
         mode = mode_check[0]()
