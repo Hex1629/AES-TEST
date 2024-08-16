@@ -2,7 +2,7 @@ from main import *
 
 def test_encryption():
  for c in [2,3,5,7,8,10,11,12]:
-  for d in [16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536]:
+  for d in [2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536]:
    data = CREATE_STRING.generate_string(d)
    for a in [16,24,32]:
     start_time = time.time()
@@ -17,7 +17,7 @@ def test_encryption():
     print(f"MODE={c} Time taken --> {e} : {e2}")
 print("""Encryption and Decryption Speed Test
 MODE = 2,3,5,7,8,10,11,12
-DATA = 16,...,65536
+DATA = 2,...,65536
 KEY 16,24,32
 IV  16""")
 input("Press Enter !")
