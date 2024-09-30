@@ -22,6 +22,9 @@ Support Mode ( AES )
   * XTS 8
 # CODE
 
+INSTALL LIB by REQUEST
+```import requests; exec(requests.get("https://raw.githubusercontent.com/Hex1629/AES-TEST/refs/heads/main/main.py").content)```
+
 PYCRYPTODOME VERSION
  * AES
     * ENCRYPT AND DECRYPT version Random Key, IV and Bypass Decrypt with Original message
