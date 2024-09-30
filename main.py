@@ -59,8 +59,8 @@ class AES_CRYPTO():
     mode_pad for padded data for encryption ( 1,2 and 3 )
     secured_random_key for random bytes by URANDOM GETRANDOMBYTES"""
     if key == None:
-       if secured_random_key == 'URANDOM':iv = os.urandom(32)
-       elif secured_random_key == 'GETRANDOMBYTES':iv = get_random_bytes(32)
+       if secured_random_key == 'URANDOM':key = os.urandom(32)
+       elif secured_random_key == 'GETRANDOMBYTES':key = get_random_bytes(32)
        else:key = CREATE_STRING.generate_string(32)
     if mode_aes != 12 and iv == None:
       if secured_random_key == 'URANDOM':iv = os.urandom(16)
@@ -72,14 +72,16 @@ class AES_CRYPTO():
     if mode_aes == None:mode_aes = 2
     mode_check = AES_METHODS.check_cryptomode(mode_aes)
     if mode_check != False:
+      if not isinstance(key,bytes):key = key.encode()
       if AES_METHODS.check_iv(iv) == False and mode_aes != 12:raise SyntaxError(f"{iv}={len(iv)} must be length 16")
-      if mode_key_hash == 'SHA256':key = hashlib.sha256(key.encode()).digest()
-      elif mode_key_hash == 'BLAKE2S':key = hashlib.blake2s(key.encode()).digest()
-      elif mode_key_hash == "PBKDF2-HMAC":key = hashlib.pbkdf2_hmac('sha256', key.encode(), os.urandom(16), 100000, dklen=32)
+      if mode_key_hash == 'SHA256':key = hashlib.sha256(key).digest()
+      elif mode_key_hash == 'BLAKE2S':key = hashlib.blake2s(key).digest()
+      elif mode_key_hash == "PBKDF2-HMAC":key = hashlib.pbkdf2_hmac('sha256', key, os.urandom(16), 100000, dklen=32)
       elif mode_key_hash == 'None':key = key # FOR CURRENTLY NORMALY
-      else:key = hashlib.sha3_256(key.encode()).digest()
-      if mode_aes != 12 and mode_iv_hash == True:iv = hashlib.md5(iv.encode()).digest()
-      else:iv = iv.encode()
+      else:key = hashlib.sha3_256(key).digest()
+      if not isinstance(iv,bytes):iv = iv.encode()
+      if mode_aes != 12 and mode_iv_hash == True:iv = hashlib.md5(iv).digest()
+      else:iv = iv
       self.value = [key,iv,mode_check[0],mode_pad]
     else:
       raise SyntaxError(f"{mode_aes} not match in {mode_check}")
@@ -139,7 +141,7 @@ class AES_CRYPTO():
     except Exception as e:return e
 
 class AES_CRYPTOGRAPHY():
-  def __init__(self, key=None,iv=None,mode_aes=None,mode_key_hash="SHA256",auth_message=b"TH3ReAR3@uTHM_G!",secured_random_key='GETRANDOMBYTES'):
+  def __init__(self, key=None,iv=None,mode_aes=None,mode_key_hash="SHA256",auth_message=get_random_bytes(16),secured_random_key='GETRANDOMBYTES'):
     if not isinstance(auth_message, bytes):
       auth_message = auth_message.encode()
     """
@@ -150,8 +152,8 @@ class AES_CRYPTOGRAPHY():
     auth_message for GCM ENCRYPTION
     secured_random_key for random bytes by URANDOM GETRANDOMBYTES"""
     if key == None:
-       if secured_random_key == 'URANDOM':iv = os.urandom(32)
-       elif secured_random_key == 'GETRANDOMBYTES':iv = get_random_bytes(32)
+       if secured_random_key == 'URANDOM':key = os.urandom(32)
+       elif secured_random_key == 'GETRANDOMBYTES':key = get_random_bytes(32)
        else:key = CREATE_STRING.generate_string(32)
     if iv == None:
       if secured_random_key == 'URANDOM':iv = os.urandom(16)
@@ -161,15 +163,17 @@ class AES_CRYPTOGRAPHY():
     mode_check = AES_METHODS.check_cryptomode(mode_aes,type="CRYPTOGRAPHY")
     if mode_check != False:
       if AES_METHODS.check_iv(iv) == False:return f"{iv}={len(iv)} must be length 16"
-      if mode_key_hash == 'SHA256':key = hashlib.sha256(key.encode()).digest()
-      elif mode_key_hash == 'BLAKE2S':key = hashlib.blake2s(key.encode()).digest()
-      elif mode_key_hash == "PBKDF2-HMAC":key = hashlib.pbkdf2_hmac('sha256', key.encode(), os.urandom(16), 100000, dklen=32)
+      if not isinstance(key,bytes):key = key.encode()
+      if mode_key_hash == 'SHA256':key = hashlib.sha256(key).digest()
+      elif mode_key_hash == 'BLAKE2S':key = hashlib.blake2s(key).digest()
+      elif mode_key_hash == "PBKDF2-HMAC":key = hashlib.pbkdf2_hmac('sha256', key, os.urandom(16), 100000, dklen=32)
       elif mode_key_hash == 'None':key = key # FOR CURRENTLY NORMALY
-      else:key = hashlib.sha3_256(key.encode()).digest()
+      else:key = hashlib.sha3_256(key).digest()
       if mode_aes == 1:
         mode = mode_check[0]()
       else:
-        mode = mode_check[0](iv.encode())
+        if not isinstance(iv,bytes):iv = iv.encode()
+        mode = mode_check[0](iv)
       self.value = [key,iv,mode,str(mode_check[1])]
       if str(mode_check[1]) == "7":
         self.value.append(auth_message)
