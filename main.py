@@ -4,7 +4,9 @@ from Crypto.Random import get_random_bytes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding
 from cryptography.hazmat.backends import default_backend
-import random, string, hashlib,base64
+import random, string, hashlib,base64,os
+from hashlib import pbkdf2_hmac
+import os
 
 class CREATE_STRING():
   
@@ -47,17 +49,23 @@ class RSA_TEST():
     return aes_key
 
 class AES_CRYPTO():
-  def __init__(self, key=None,iv=None,mode_aes=None,mode_key_hash="SHA256".encode(),mode_iv_hash=False,mode_pad=2):
+  def __init__(self, key=None,iv=None,mode_aes=None,mode_key_hash="SHA256".encode(),mode_iv_hash=False,mode_pad=2,secured_random_key='URANDOM'):
     """
     key for Key Must be string which will used to encrypt the strings or files
     iv for initializing vector which is used to randomize the encrypted data
     mode_aes for encrypting data
     mode_iv_hash for hashing iv with MD5 or default=False
-    mode_key_hash for hashing key with SHA256,BLAKE2S,SHA3_256 or default=False
-    mode_pad for padded data for encryption ( 1,2 and 3 )"""
-    if key == None:key = CREATE_STRING.generate_string(32)
+    mode_key_hash for hashing key with SHA256,BLAKE2S,SHA3_256,PBKDF2-HMAC or default=False
+    mode_pad for padded data for encryption ( 1,2 and 3 )
+    secured_random_key for random bytes by URANDOM GETRANDOMBYTES"""
+    if key == None:
+       if secured_random_key == 'URANDOM':iv = os.urandom(32)
+       elif secured_random_key == 'GETRANDOMBYTES':iv = get_random_bytes(32)
+       else:key = CREATE_STRING.generate_string(32)
     if mode_aes != 12 and iv == None:
-      iv = CREATE_STRING.generate_string(16)
+      if secured_random_key == 'URANDOM':iv = os.urandom(16)
+      elif secured_random_key == 'GETRANDOMBYTES':iv = get_random_bytes(16)
+      else:iv = CREATE_STRING.generate_string(16)
     else:
       iv = CREATE_STRING.generate_string(15)
     if mode_pad > 3:mode_pad = 2
@@ -67,9 +75,10 @@ class AES_CRYPTO():
       if AES_METHODS.check_iv(iv) == False and mode_aes != 12:raise SyntaxError(f"{iv}={len(iv)} must be length 16")
       if mode_key_hash == 'SHA256':key = hashlib.sha256(key.encode()).digest()
       elif mode_key_hash == 'BLAKE2S':key = hashlib.blake2s(key.encode()).digest()
+      elif mode_key_hash == "PBKDF2-HMAC":key = hashlib.pbkdf2_hmac('sha256', key.encode(), os.urandom(16), 100000, dklen=32)
       elif mode_key_hash == 'None':key = key # FOR CURRENTLY NORMALY
       else:key = hashlib.sha3_256(key.encode()).digest()
-      if mode_aes != 12:iv = hashlib.md5(iv.encode()).digest()
+      if mode_aes != 12 and mode_iv_hash == True:iv = hashlib.md5(iv.encode()).digest()
       else:iv = iv.encode()
       self.value = [key,iv,mode_check[0],mode_pad]
     else:
@@ -130,23 +139,31 @@ class AES_CRYPTO():
     except Exception as e:return e
 
 class AES_CRYPTOGRAPHY():
-  def __init__(self, key=None,iv=None,mode_aes=None,mode_key_hash="SHA256",auth_message=b"TH3ReAR3@uTHM_G!"):
+  def __init__(self, key=None,iv=None,mode_aes=None,mode_key_hash="SHA256",auth_message=b"TH3ReAR3@uTHM_G!",secured_random_key='GETRANDOMBYTES'):
     if not isinstance(auth_message, bytes):
       auth_message = auth_message.encode()
     """
     key for Key Must be string which will used to encrypt the strings or files
     iv for initializing vector which is used to randomize the encrypted data
     mode_aes for encrypting data
-    mode_key_hash for hashing key SHA256,BLAKE2S,SHA3_256
-    auth_message for GCM ENCRYPTION """
-    if key == None:key = CREATE_STRING.generate_string(32)
-    if iv == None:iv = CREATE_STRING.generate_string(16)
+    mode_key_hash for hashing key SHA256,BLAKE2S,SHA3_256,PBKDF2-HMAC
+    auth_message for GCM ENCRYPTION
+    secured_random_key for random bytes by URANDOM GETRANDOMBYTES"""
+    if key == None:
+       if secured_random_key == 'URANDOM':iv = os.urandom(32)
+       elif secured_random_key == 'GETRANDOMBYTES':iv = get_random_bytes(32)
+       else:key = CREATE_STRING.generate_string(32)
+    if iv == None:
+      if secured_random_key == 'URANDOM':iv = os.urandom(16)
+      elif secured_random_key == 'GETRANDOMBYTES':iv = get_random_bytes(16)
+      else:iv = CREATE_STRING.generate_string(16)
     if mode_aes == None:mode_aes = 2
     mode_check = AES_METHODS.check_cryptomode(mode_aes,type="CRYPTOGRAPHY")
     if mode_check != False:
       if AES_METHODS.check_iv(iv) == False:return f"{iv}={len(iv)} must be length 16"
       if mode_key_hash == 'SHA256':key = hashlib.sha256(key.encode()).digest()
       elif mode_key_hash == 'BLAKE2S':key = hashlib.blake2s(key.encode()).digest()
+      elif mode_key_hash == "PBKDF2-HMAC":key = hashlib.pbkdf2_hmac('sha256', key.encode(), os.urandom(16), 100000, dklen=32)
       elif mode_key_hash == 'None':key = key # FOR CURRENTLY NORMALY
       else:key = hashlib.sha3_256(key.encode()).digest()
       if mode_aes == 1:
