@@ -83,12 +83,8 @@ class AES_CRYPTO():
     mode_check = AES_METHODS.check_cryptomode(mode_aes)
     if mode_check != False:
       if not isinstance(key,bytes):key = key.encode()
+      key = AES_METHODS.KEY_HASH(mode_key_hash,key)
       if AES_METHODS.check_iv(iv) == False and mode_aes != 12:raise SyntaxError(f"{iv}={len(iv)} must be length 16")
-      if mode_key_hash == 'SHA256':key = hashlib.sha256(key).digest()
-      elif mode_key_hash == 'BLAKE2S':key = hashlib.blake2s(key).digest()
-      elif mode_key_hash == "PBKDF2-HMAC":key = hashlib.pbkdf2_hmac('sha256', key, os.urandom(16), 100000, dklen=32)
-      elif mode_key_hash == 'None':key = key # FOR CURRENTLY NORMALY
-      else:key = hashlib.sha3_256(key).digest()
       if not isinstance(iv,bytes):iv = iv.encode()
       if mode_aes != 12 and mode_iv_hash == True:iv = hashlib.md5(iv).digest()
       else:iv = iv
@@ -174,11 +170,7 @@ class AES_CRYPTOGRAPHY():
     if mode_check != False:
       if AES_METHODS.check_iv(iv) == False:return f"{iv}={len(iv)} must be length 16"
       if not isinstance(key,bytes):key = key.encode()
-      if mode_key_hash == 'SHA256':key = hashlib.sha256(key).digest()
-      elif mode_key_hash == 'BLAKE2S':key = hashlib.blake2s(key).digest()
-      elif mode_key_hash == "PBKDF2-HMAC":key = hashlib.pbkdf2_hmac('sha256', key, os.urandom(16), 100000, dklen=32)
-      elif mode_key_hash == 'None':key = key # FOR CURRENTLY NORMALY
-      else:key = hashlib.sha3_256(key).digest()
+      key = AES_METHODS.KEY_HASH(mode_key_hash,key)
       if mode_aes == 1:
         mode = mode_check[0]()
       else:
@@ -227,6 +219,19 @@ class AES_CRYPTOGRAPHY():
      return PAD.unpad(decryptor.update(ciphertext) + decryptor.finalize())
   
 class AES_METHODS():
+
+  def KEY_HASH(mode_key_hash,key):
+    if mode_key_hash == 'SHA256':key = hashlib.sha256(key).digest()
+    elif mode_key_hash == 'SHAKE-256':key = hashlib.shake_256(key).digest(32)
+    elif mode_key_hash == 'SHAKE-128':key = hashlib.shake_128(key).digest(32)
+    elif mode_key_hash == 'BLAKE2B':hashlib.blake2b(key,digest_size=32).digest()
+    elif mode_key_hash == 'SCRYPT':key = hashlib.scrypt(password, salt=os.urandom(16), n=16384, r=8, p=1, dklen=32)
+    elif mode_key_hash == 'BLAKE2S':key = hashlib.blake2s(key).digest()
+    elif mode_key_hash == "PBKDF2-HMAC":key = hashlib.pbkdf2_hmac('sha256', key, os.urandom(16), 100000, dklen=32)
+    elif mode_key_hash == 'None':key = key # FOR CURRENTLY NORMALY
+    else:key = hashlib.sha3_256(key).digest()
+    return key
+  
   def check_cryptomode(mode,type=None):
     if type == "CRYPTOGRAPHY":
       modes_aes = {"1":modes.ECB,
