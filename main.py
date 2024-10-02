@@ -25,28 +25,38 @@ class RSA_TEST():
      public_key = key.publickey().export_key()
     elif public_key != None and private_key != None:pass
     else:raise SyntaxError("Maybe not match key public and private")
+    if length == 1024:self.dynamic_system = [117,128]
+    elif length == 2048:self.dynamic_system = [245,256]
+    elif length == 3072:self.dynamic_system = [373,384]
+    else:self.dynamic_system = [501,512]
     self.public_key = public_key
     self.private_key = private_key
+    self.length_rsa = length
     
-  def export_public(self):
-    return self.public_key
-  
-  def export_private(self):
-    return self.private_key
+  def export_public(self):return self.public_key
+  def export_private(self):return self.private_key
+  def export_length_rsa(self):return self.length_rsa
 
   def encrypt(self,data):
-    if not isinstance(data, bytes):
-      data = data.encode()
-    rsa_key = RSA.import_key(self.public_key)
-    cipher_rsa = PKCS1_OAEP.new(rsa_key)
-    encrypted_aes_key = cipher_rsa.encrypt(data)
-    return encrypted_aes_key
+    if not isinstance(data, bytes):data = data.encode()
+    cipher_rsa = PKCS1_OAEP.new(RSA.import_key(self.public_key))
+    if len(data) > self.dynamic_system[0]:
+      chunk_size,encrypted_chunks = self.dynamic_system[0],[]
+      for i in range(0, len(data), chunk_size):encrypted_chunks.append(cipher_rsa.encrypt(data[i:i + chunk_size]))
+      encrypted_message = b''.join(encrypted_chunks)
+      return base64.b64encode(encrypted_message)
+    else:return cipher_rsa.encrypt(data)
 
   def decrypt(self,data):
-    rsa_key = RSA.import_key(self.private_key)
-    cipher_rsa = PKCS1_OAEP.new(rsa_key)
-    aes_key = cipher_rsa.decrypt(data)
-    return aes_key
+    if not isinstance(data, bytes):data = data.encode()
+    cipher_rsa = PKCS1_OAEP.new(RSA.import_key(self.private_key))
+    if len(data) > self.dynamic_system[1]:
+      data = base64.b64decode(data)
+      chunk_size,decrypted_chunks = self.dynamic_system[1],[]
+      for i in range(0, len(data), chunk_size):decrypted_chunks.append(cipher_rsa.decrypt(data[i:i + chunk_size]))
+      decrypted_message = b''.join(decrypted_chunks)
+      return decrypted_message
+    else:return cipher_rsa.decrypt(data)
 
 class AES_CRYPTO():
   def __init__(self, key=None,iv=None,mode_aes=None,mode_key_hash="SHA256".encode(),mode_iv_hash=False,mode_pad=2,secured_random_key='URANDOM'):
@@ -209,7 +219,7 @@ class AES_CRYPTOGRAPHY():
      if not isinstance(ciphertext, bytes):
       ciphertext = ciphertext.encode()
      if str(self.value[3]) == "7":
-       modes = AES_METHODS.check_cryptomode(7,type="CRYPTOGRAPHY")[0](self.value[1].encode(),self.value[5])
+       modes = AES_METHODS.check_cryptomode(7,type="CRYPTOGRAPHY")[0](self.value[1],self.value[5])
      else:modes = self.value[2]
      decryptor = Cipher(algorithms.AES(self.value[0]), modes, backend=default_backend()).decryptor()
      if self.value[3] == '7':
