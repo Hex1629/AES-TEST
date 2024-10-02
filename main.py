@@ -65,7 +65,7 @@ class AES_CRYPTO():
     iv for initializing vector which is used to randomize the encrypted data
     mode_aes for encrypting data
     mode_iv_hash for hashing iv with MD5 or default=False
-    mode_key_hash for hashing key with SHA256,BLAKE2S,SHA3_256,PBKDF2-HMAC or default=False
+    mode_key_hash for hashing key with SHA256,BLAKE2S,SHA3_256,PBKDF2-HMAC,SHAKE-256,SHAKE-128,BLAKE2B,SCRYPT or default=False
     mode_pad for padded data for encryption ( 1,2 and 3 )
     secured_random_key for random bytes by URANDOM GETRANDOMBYTES"""
     if key == None:
@@ -154,7 +154,7 @@ class AES_CRYPTOGRAPHY():
     key for Key Must be string which will used to encrypt the strings or files
     iv for initializing vector which is used to randomize the encrypted data
     mode_aes for encrypting data
-    mode_key_hash for hashing key SHA256,BLAKE2S,SHA3_256,PBKDF2-HMAC
+    mode_key_hash for hashing key SHA256,BLAKE2S,SHA3_256,PBKDF2-HMAC,SHAKE-256,SHAKE-128,BLAKE2B,SCRYPT
     auth_message for GCM ENCRYPTION
     secured_random_key for random bytes by URANDOM GETRANDOMBYTES"""
     if key == None:
