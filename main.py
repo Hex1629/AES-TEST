@@ -101,7 +101,7 @@ class AES_CRYPTO():
   def encrypt(self, data):
     """
     data for Encrypt message"""
-    if not isinstance(data, str):
+    if isinstance(data, str):
       data = data.encode()
     self.bypass_data = data
     try:
