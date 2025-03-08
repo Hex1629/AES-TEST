@@ -76,8 +76,8 @@ class AES_CRYPTO():
       if secured_random_key == 'URANDOM':iv = os.urandom(16)
       elif secured_random_key == 'GETRANDOMBYTES':iv = get_random_bytes(16)
       else:iv = CREATE_STRING.generate_string(16)
-    else:
-      iv = CREATE_STRING.generate_string(15)
+    elif iv == None:
+      iv = CREATE_STRING.generate_string(15)# waitting check
     if mode_pad > 3:mode_pad = 2
     if mode_aes == None:mode_aes = 2
     mode_check = AES_METHODS.check_cryptomode(mode_aes)
