@@ -102,7 +102,7 @@ class AES_CRYPTO():
     """
     data for Encrypt message"""
     if not isinstance(data, str):
-      data = data.decode()
+      data = data.encode()
     self.bypass_data = data
     try:
       pad = self.value[3]
